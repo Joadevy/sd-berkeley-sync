@@ -3,17 +3,21 @@ import { puertoMaestro } from './constantes';
 
 const obtenerDesfasajeRandomEntre = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
-const tiempoNodo = Date.now() + obtenerDesfasajeRandomEntre(-500, 500);
+let tiempoNodo = Date.now() + obtenerDesfasajeRandomEntre(-500, 500);
+const idNodo = crypto.randomUUID()
+
 const nodo = new net.Socket();
 nodo.connect(puertoMaestro, 'localhost', () => {
   console.log('Conectado al nodo maestro');
 
   // Cada 5 segundos hace una peticion al nodo maestro para ajustarse
   setInterval(() => {
-    nodo.write(JSON.stringify({ id: crypto.randomUUID(), tiempo: tiempoNodo }));
+    console.log(`Enviando tiempo al nodo maestro: ${tiempoNodo}`);
+    nodo.write(JSON.stringify({ id: idNodo, tiempo: tiempoNodo }));
   }, 5000);
   
   nodo.on('data', (data) => {
+    console.log(data.toString())
     const msgNodoMaestro = JSON.parse(data.toString());
 
     // Si recibe un ajuste, lo aplica

@@ -1,6 +1,6 @@
 import net from 'node:net';
 import { puertoMaestro, cantidadNodos } from './constantes';
-let tiempoNodos = []; // Contiene el tiempo recibido de cada nodo en forto {id, tiempo, socket}
+let tiempoNodos = new Map(); // Contiene el tiempo recibido de cada nodo en forto {id => {tiempo, socket}}
 
 const nodoMaestro = net.createServer((socket) => {
   console.log('Nodo conectado:', socket.remoteAddress);
@@ -9,10 +9,11 @@ const nodoMaestro = net.createServer((socket) => {
     const msg = JSON.parse(data.toString());
     console.log(`Tiempo recibido de nodo ${msg.id}: ${msg.tiempo}`);
 
-    tiempoNodos.push({ id: msg.id, tiempo: msg.tiempo, socket });
+    // Guarda el tiempo recibido y el socket del nodo
+    tiempoNodos.set(msg.id, { tiempo: msg.tiempo, socket: socket || tiempoNodos.get(msg.id)?.socket });
 
     // Si se han recibido tiempos de todos los nodos
-    if (tiempoNodos.length === cantidadNodos) {
+    if (tiempoNodos.size === cantidadNodos) {
       const tiempoNodoMaestro = Date.now();
       const promedioTiempo = calculaTiempoPromedio(tiempoNodos, tiempoNodoMaestro);
 
@@ -22,20 +23,23 @@ const nodoMaestro = net.createServer((socket) => {
         nodo.socket.write(JSON.stringify({ ajuste }));
       });
 
-      // Resetea el array de tiempos para la proxima iteracion
-      tiempoNodos = [];
+      // Resetea el map de tiempos para la proxima iteracion
+      tiempoNodos = new Map();
     }
   });
 
   socket.on('end', () => {
     console.log('Nodo desconectado:', socket.remoteAddress);
-    tiempoNodos = tiempoNodos.filter(nodo => nodo.socket !== socket);
+    tiempoNodos = new Map([...tiempoNodos].filter(([id, nodo]) => nodo.socket !== socket));
   });
 });
 
 function calculaTiempoPromedio(tiempoNodos, tiempoNodoMaestro) {
-  const totalNodos = tiempoNodos.length + 1; // Incluyendo al nodo master
-  const totalTiempo = tiempoNodos.reduce((acc, nodo) => acc + nodo.tiempo, tiempoNodoMaestro);
+  const totalNodos = tiempoNodos.size + 1; // Incluyendo al nodo master
+  let totalTiempo = tiempoNodoMaestro;
+  for (const nodo of tiempoNodos.values()) {  
+    totalTiempo += nodo.tiempo;
+  }
   return totalTiempo / totalNodos;
 }
 
