@@ -1,3 +1,5 @@
+![](https://res.cloudinary.com/dkjkgri6x/image/upload/v1726946006/Screenshot_2024-09-21_at_4.13.11_PM_lff1e6.png)
+
 ## Objetivo de la aplicación
 Simular el algoritmo de sincronización de Berkeley utilizando sockets TCP en un modelo de nodo central estático.
 
