@@ -25,6 +25,10 @@ const nodoMaestro = net.createServer((socket) => {
         nodo.socket.write(JSON.stringify({ ajuste }));
       });
 
+      // Ajusta el reloj del nodo maestro
+      const ajuste = promedioTiempo - tiempoNodoCentral;
+      tiempoNodoCentral += ajuste;
+
       // Resetea el map de tiempos para la proxima iteracion
       tiempoNodos = new Map();
     }
