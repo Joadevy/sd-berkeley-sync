@@ -2,6 +2,8 @@ import net from 'node:net';
 import { puertoMaestro, cantidadNodos } from './constantes';
 let tiempoNodos = new Map(); // Contiene el tiempo recibido de cada nodo en forto {id => {tiempo, socket}}
 
+let tiempoNodoCentral = Date.now();
+
 const nodoMaestro = net.createServer((socket) => {
   console.log('Nodo conectado:', socket.remoteAddress);
 
@@ -46,3 +48,10 @@ function calculaTiempoPromedio(tiempoNodos, tiempoNodoMaestro) {
 nodoMaestro.listen(puertoMaestro, () => {
   console.log(`Nodo maestro ejecutándose en el puerto ${puertoMaestro}`);
 });
+
+function actualizarRelojCentral(){
+  tiempoNodoCentral = Date.now();
+}
+
+// Actualiza el reloj central cada 100ms
+setInterval(actualizarRelojCentral, 100);
